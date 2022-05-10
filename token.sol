@@ -72,22 +72,33 @@ interface IERC20 {
 contract IntentropyCSToken is IERC20 {
     using SafeMath for uint256;
 
-    string public constant name = "IntentropyCS Token";
-    string public constant symbol = "ICS";
-    uint8 public constant decimals = 18;
+    uint256 private _totalSupply;
+    string private _name;
+    string private _symbol;
+    uint8 private _decimals;
 
     mapping( address => uint256 ) private _balances;
     mapping( address => mapping ( address => uint256 ) ) private _allowances;
 
-    uint256 totalSupply_;
-
-    constructor( uint256 total ) public {
-        totalSupply_ = total;
-        _balances[ msg.sender ] = totalSupply_;
+    /**
+     * @dev Sets the values for {name} and {symbol}, initializes {decimals} with
+     * a default value of 18.
+     *
+     * To select a different value for {decdimals}, use {_setupDecimals}.
+     *
+     * All three of these values are immutable:  They can only be set once
+     * during construction.
+     */
+    constructor( string memory name_, string memory symbol_, uint256 totalSupply_ ) public {
+        _name = name_;
+        _symbol = symbol_;
+        _decimals = 18;
+        _totalSupply = totalSupply_;
+        _balances[ msg.sender ] = _totalSupply;
     }
 
     function totalSupply() public override view returns (uint256) {
-        return totalSupply_;
+        return _totalSupply;
     }
 
 
