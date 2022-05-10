@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.0 <=0.8.13;
+pragma solidity ^0.8.13;
 
 /**
  * @dev Provides information about the current execution context, including the
@@ -11,11 +11,10 @@ pragma solidity >=0.8.0 <=0.8.13;
  *
  * This contract is only required for intermediate, lirary-like contracts.
  */
-
- abstract contract Context {
-     function _msgSender() internal view virtual returns (address) {
+abstract contract Context {
+    function _msgSender() internal view virtual returns (address) {
         return msg.sender;
-     }
+    }
 
     function _msgData() internal view virtual returns (bytes calldata) {
         return msg.data;

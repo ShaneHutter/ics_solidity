@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.0 <=0.8.13;
+pragma solidity ^0.8.13;
 
 library SafeMath {
     function sub( uint256 a , uint256 b ) internal pure returns (uint256) {
