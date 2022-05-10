@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "./Context.sol";
 import "./IERC20.sol";
 import "./SafeMath.sol";
 import "./IERC20Metadata.sol";
+import "./Context.sol";
 
-contract ERC20 is IERC20 {
+contract ERC20 is Context , IERC20 , IERC20Metadata{
     using SafeMath for uint256;
 
     uint256 private _totalSupply;
@@ -30,12 +30,12 @@ contract ERC20 is IERC20 {
         string memory name_, 
         string memory symbol_, 
         uint256 totalSupply_ 
-        ) public {
+        ){
             _name = name_;
             _symbol = symbol_;
             _decimals = 18;
             _totalSupply = totalSupply_;
-            _balances[ msg.sender ] = _totalSupply;
+            _balances[ _msgSender() ] = _totalSupply;
         }
 
     /**
