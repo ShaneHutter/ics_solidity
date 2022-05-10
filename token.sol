@@ -76,14 +76,14 @@ contract IntentropyCSToken is IERC20 {
     string public constant symbol = "ICS";
     uint8 public constant decimals = 18;
 
-    mapping( address => uint256 ) balances;
-    mapping( address => mapping ( address => uint256 ) ) allowed;
+    mapping( address => uint256 ) private _balances;
+    mapping( address => mapping ( address => uint256 ) ) private _allowances;
 
     uint256 totalSupply_;
 
     constructor( uint256 total ) public {
         totalSupply_ = total;
-        balances[ msg.sender ] = totalSupply_;
+        _balances[ msg.sender ] = totalSupply_;
     }
 
     function totalSupply() public override view returns (uint256) {
@@ -92,33 +92,33 @@ contract IntentropyCSToken is IERC20 {
 
 
     function balanceOf( address tokenOwner ) public override view returns (uint256) {
-        return balances[ tokenOwner ];
+        return _balances[ tokenOwner ];
     }
 
     function transfer( address reciever , uint256 numTokens ) public override returns (bool) {
-        require( numTokens <= balances[ msg.sender ] );
-        balances[ msg.sender ] = balances[ msg.sender ].sub( numTokens );
-        balances[ reciever ] = balances[ reciever ].add( numTokens );
+        require( numTokens <= _balances[ msg.sender ] );
+        _balances[ msg.sender ] = _balances[ msg.sender ].sub( numTokens );
+        _balances[ reciever ] = _balances[ reciever ].add( numTokens );
         emit Transfer( msg.sender , reciever , numTokens );
         return true;
     }
 
     function approve( address delegate , uint256 numTokens ) public override returns (bool) {
-        allowed[ msg.sender ][ delegate ] = numTokens;
+        _allowances[ msg.sender ][ delegate ] = numTokens;
         emit Approval( msg.sender , delegate , numTokens );
         return true;
     }
 
     function allowance( address owner , address delegate ) public override view returns (uint) {
-        return allowed[ owner ][ delegate ];
+        return _allowances[ owner ][ delegate ];
     }
 
     function transferFrom( address owner , address buyer , uint256 numTokens ) public override returns (bool) {
-        require( numTokens <= balances[ owner ] );
-        require( numTokens <= allowed[ owner ][ msg.sender ] );
-        balances[ owner ] = balances[ owner ].sub( numTokens );
-        allowed[ owner ][ msg.sender ] = allowed[ owner ][ msg.sender ].sub( numTokens );
-        balances[ buyer ] = balances[ buyer ].add( numTokens );
+        require( numTokens <= _balances[ owner ] );
+        require( numTokens <= _allowances[ owner ][ msg.sender ] );
+        _balances[ owner ] = _balances[ owner ].sub( numTokens );
+        _allowances[ owner ][ msg.sender ] = _allowances[ owner ][ msg.sender ].sub( numTokens );
+        _balances[ buyer ] = _balances[ buyer ].add( numTokens );
         emit Transfer( owner , buyer , numTokens );
         return true;
     }    
