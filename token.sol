@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.6.0 <=0.8.13;
+pragma solidity >=0.8.0 <=0.8.13;
 
 /**
  * @dev Interface of the ERC20 standard as defined in the EIP.
@@ -69,7 +69,7 @@ interface IERC20 {
     event Approval( address indexed owner , address indexed spender , uint256 value );
 }
 
-contract IntentropyCSToken is IERC20 {
+contract ERC20 is IERC20 {
     using SafeMath for uint256;
 
     uint256 private _totalSupply;
@@ -97,6 +97,9 @@ contract IntentropyCSToken is IERC20 {
         _balances[ msg.sender ] = _totalSupply;
     }
 
+    /**
+     * @dev See {IERC20-totalSupply}.
+     */
     function totalSupply() public override view returns (uint256) {
         return _totalSupply;
     }
