@@ -3,8 +3,8 @@ pragma solidity >=0.8.0 <=0.8.13;
 
 import "./IERC20.sol";
 import "./SafeMath.sol";
-//import "./extensions/IERC20Metadata.sol";
-//import "../../utils/Context.sol";
+import "./IERC20Metadata.sol";
+import "./Context.sol";
 
 contract ERC20 is IERC20 {
     /**
