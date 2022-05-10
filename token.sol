@@ -138,7 +138,7 @@ contract ERC20 is IERC20 {
         address to, 
         uint256 amount 
     ) public override returns (bool) {
-        _spendAllowance( from , spender , amount );
+        _spendAllowance( from , to , amount );
         _transfer( from , to , amount );
         return true;
     }
