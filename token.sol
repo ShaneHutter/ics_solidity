@@ -35,7 +35,9 @@ contract ERC20 is Context , IERC20 , IERC20Metadata{
             _symbol = symbol_;
             _decimals = 18;
             _totalSupply = totalSupply_;
-            _balances[ _msgSender() ] = _totalSupply;
+            _balances[
+                _msgSender() 
+                ] = _totalSupply;
         }
 
     /**
