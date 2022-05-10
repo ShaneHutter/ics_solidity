@@ -379,6 +379,99 @@ contract ERC20 is IERC20 {
         );
     }
 
+    /**
+     * @dev Sets `amount` as the allowance of `spender` over the `owner`'s tokens.
+     *
+     * This internal function is equivalent to `approve`, and can be used to set
+     * automatic allowances for certain subsystems, etc...
+     *
+     * Emits an {Approval} event.
+     *
+     * Requirements:
+     *   - `owner` cannot be the zero address
+     *   - `spender` cannot be the zero address
+     */
+     function _approve(
+         address owner,
+         address spender,
+         uint256 amount
+     ) internal virtual {
+         require(
+             owner != address( 0 ),
+             "ERC20: approve from the zero address"
+         );
+         require(
+             spender != address( 0 ),
+             "ERC20: approve to the zero address"
+         );
+         _allowances[ owner ][ spender ] = amount;
+         emit Approval( owner , spender , amount );
+     }
+
+    /**
+     * @dev Updates `owner`'s allowance for `spender1 based on spent `amount`.
+     *
+     * Does not update the allowance amount in case of infinite allowance.
+     * Revert if not enough allowance is available.
+     *
+     * May emit an {Approval} event.
+     */
+    function _spendAllowance(
+        address owner,
+        address spender,
+        uint256 amount
+    ) internal virtual {
+        uint256 currentAllowance = allowance( owner , spender);
+        if(
+            currentAllowance != type( uint256 ).max
+            ){
+                require(
+                    currentAllowance >= amount,
+                    "ERC20: insufficient allowance"
+                );
+                unchecked {
+                    _approve(
+                        owner,
+                        spender,
+                        currentAllowance - amount
+                        );
+                }
+        }
+    }
+
+    /**
+     * @dev Hook that is called before any transfer of tokens.  This includes
+     * minting and burning.
+     *
+     * Calling conditions:
+     *   - when `from` and `to` are both non-zero, `amount` of `from`'s tokens
+     *     will be transfered to `to`.
+     *   - when `from` is zero, `amount` tokens will be minted for `to`.
+     *   - `from` and `to` are never both zero
+     */
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal virtual {}
+
+    /**
+     * @dev Hook that is called after any transfer of tokens.  This includes
+     * minting and burning.
+     *
+     * Calling conditions:
+     *   - when `from` and `to` are both non-zero, `amount` of `from`'s tokens
+     *     have been transferred to `to`.
+     *   - when `from` is zero, `amount` tokens have been minted for `to`.
+     *   - when `to` is zero, `amount of `from`'s tokens have been burned.
+     *   - `from` and `to` are never both zero.
+     */
+    function _afterTokenTransfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal virtual {}
+
 }
 
 library SafeMath {
