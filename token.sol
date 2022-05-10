@@ -70,6 +70,10 @@ interface IERC20 {
 }
 
 contract ERC20 is IERC20 {
+    /**
+     * @dev
+     */
+
     using SafeMath for uint256;
 
     uint256 private _totalSupply;
@@ -89,53 +93,292 @@ contract ERC20 is IERC20 {
      * All three of these values are immutable:  They can only be set once
      * during construction.
      */
-    constructor( string memory name_, string memory symbol_, uint256 totalSupply_ ) public {
-        _name = name_;
-        _symbol = symbol_;
-        _decimals = 18;
-        _totalSupply = totalSupply_;
-        _balances[ msg.sender ] = _totalSupply;
+    constructor(
+        string memory name_, 
+        string memory symbol_, 
+        uint256 totalSupply_ 
+        ) public {
+            _name = name_;
+            _symbol = symbol_;
+            _decimals = 18;
+            _totalSupply = totalSupply_;
+            _balances[ msg.sender ] = _totalSupply;
+        }
+
+    /**
+     * @dev Returns the name of the token.
+     */
+    function name() public view virtual override returns (string memory) {
+        return _name;
+    }
+
+    /**
+     * @dev Returns the symbol of the token.
+     */
+    function symbol() public view virtual override returns (string memory) {
+         return _symbol;
+     }
+
+    /**
+     * @dev
+     */
+    function decimals() public view virtual override returns (uint8) {
+        return _decimals;
     }
 
     /**
      * @dev See {IERC20-totalSupply}.
      */
-    function totalSupply() public override view returns (uint256) {
+    function totalSupply() public view virtual override returns (uint256) {
         return _totalSupply;
     }
 
-
-    function balanceOf( address tokenOwner ) public override view returns (uint256) {
-        return _balances[ tokenOwner ];
+    /**
+     * @dev See {IERC20-balanceOf}.
+     */
+    function balanceOf( address account ) public view virtual override returns (uint256) {
+        return _balances[ account ];
     }
 
-    function transfer( address reciever , uint256 numTokens ) public override returns (bool) {
-        require( numTokens <= _balances[ msg.sender ] );
-        _balances[ msg.sender ] = _balances[ msg.sender ].sub( numTokens );
-        _balances[ reciever ] = _balances[ reciever ].add( numTokens );
-        emit Transfer( msg.sender , reciever , numTokens );
+    /**
+     * @dev See {IERC20-transfer}.
+     * 
+     * Requirements:
+     *   - `recipient` cannot be the zero address.
+     *   - the caller must have a balance of at least `amount`.
+     */
+    function transfer(
+        address to, 
+        uint256 amount 
+    ) public virtual override returns (bool) {
+        address owner = _msgSender();
+        _transfer( owner , to , amount );
         return true;
     }
 
-    function approve( address delegate , uint256 numTokens ) public override returns (bool) {
-        _allowances[ msg.sender ][ delegate ] = numTokens;
-        emit Approval( msg.sender , delegate , numTokens );
+    /**
+     * @dev See {IERC20-approve}
+     * 
+     * NOTE: If `amount` is the maximum `uint256`, the allowance is not updated on
+     * `transferFrom`.  This is semantically equivalent to an infinite approval.
+     *
+     * Requirements:
+     *   - `spender` cannot be the zero address.
+     */
+    function approve(
+        address spender, 
+        uint256 amount 
+    ) public virtual override returns (bool) {
+        address owner = _msgSender();
+        _approve( owner , spender , amount );
         return true;
     }
 
-    function allowance( address owner , address delegate ) public override view returns (uint) {
-        return _allowances[ owner ][ delegate ];
+    /**
+     * @dev See {IERC20-allowance}.
+     */
+    function allowance(
+        address owner, 
+        address spender 
+    ) public view virtual override returns (uint256) {
+        return _allowances[ owner ][ spender ];
     }
 
-    function transferFrom( address owner , address buyer , uint256 numTokens ) public override returns (bool) {
-        require( numTokens <= _balances[ owner ] );
-        require( numTokens <= _allowances[ owner ][ msg.sender ] );
-        _balances[ owner ] = _balances[ owner ].sub( numTokens );
-        _allowances[ owner ][ msg.sender ] = _allowances[ owner ][ msg.sender ].sub( numTokens );
-        _balances[ buyer ] = _balances[ buyer ].add( numTokens );
-        emit Transfer( owner , buyer , numTokens );
+    /**
+     * @dev See {IERC20-transferFrom}
+     *
+     * Emits an {Approval} event indicating the updated allowance.  This is not
+     * required by the EIP.
+     *
+     * Requirements:
+     *   - `from` and `to` cannot be zero address.
+     *   - `from` must have a balance of at least ammount.
+     *   - the caller must have allowance for `from`'s token of
+     *     at least ammount.
+     */
+    function transferFrom(
+        address from, 
+        address to, 
+        uint256 amount 
+    ) public override returns (bool) {
+        _spendAllowance( from , spender , amount );
+        _transfer( from , to , amount );
         return true;
-    }    
+    }
+
+    /**
+     * @dev Atomically increases the allowance granted to `spender` by the caller.
+     *
+     * This is an alternatice to {approve} that can be used as a mitigation for
+     * problems described in {IERC20-approve}
+     *
+     * Emits an {Approval} event indicating the updated allowance
+     *
+     * Requirements:
+     *   - `spender` cannot be the zero address.
+     */
+    function increaseAllowance(
+        address spender,
+        uint256 addedValue
+    ) public virtual returns (bool) {
+        address owner = _msgSender();
+        _approve(
+            owner,
+            spender, 
+            allowance( owner , spender) + addedValue
+            );
+        return true;
+    }
+
+    /**
+     * @dev Atomically decreases the allowance granted to `spender` by the caller.
+     *
+     * This is an alternative to {approve}} that can be used as a mitigation for
+     * problems described in {IERC20-approve}
+     *
+     * Emits an {Approval} event indicating the updated allowance.
+     *
+     * Requirements:
+     *   - `spender` cannot be the zero address.
+     *   - `spender` must at least have allowance for the caller of at least
+     *     `subtractedValue`.
+     */
+    function decreaseAllowance(
+        address spender,
+        uint256 subtractedValue
+    ) public virtual returns (bool) {
+        address owner = _msgSender();
+        uint256 currentAllowance = allowance( owner , spender );
+        require(
+            currentAlowance >= subtractedValue,
+            "ERC20: decreased allowance below zero"
+            );
+        unchecked {
+            _approve( owner , spender , currentAllowance - subtractedValue );
+        }
+        return true;
+    }
+
+    /**
+     * @dev Moves `mount` of tokens `from` to `to`.
+     *
+     * This internal function is equivalent to {transfer}, and can be used to
+     * impliment automatic token fees, slashing mechanisms, etc...
+     *
+     * Emits a {Transfer} event.
+     *
+     * Requirements:
+     *   - `from` cannot be zero address.
+     *   - `to` cannot be zero address.
+     *   - `from` must have balance of at least `ammount`.
+     */
+    function _transfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal virtual {
+        require(
+            from != address( 0 ),
+            "ERC20: transfer from the zero address"
+        );
+        require(
+            to != address( 0 ),
+            "ERC20: transfer to the zero address"
+        );
+        _beforeTokenTransfer( from , to , amount );
+        uint256 fromBalance = _balances[ from ];
+        require(
+            fromBalance >= amount,
+            "ERC20: transfer amount exceeds balance"
+        );
+        unchecked {
+            _balances[ from ] = fromBalance - amount;
+        }
+        _balances[ to ] += amount;
+        emit Transfer( from , to , amount );
+        _afterTokenTransfer( from , to , amount );
+    }
+
+    /**
+     * @dev Creates `amount` tokens and assigns them to `account`, increasing
+     * the total supply.
+     *
+     * Emits a {Transfer} event with `from` set to the zero address.
+     *
+     * Rrequirements:
+     *   - `account` cannot be the zero address.
+     */
+    function _mint(
+        address account,
+        uint256 amount
+    ) internal virtual {
+        require(
+            account != address( 0 ),
+            "ERC20: mint to the zero address"
+        );
+        _beforeTokenTransfer(
+            address( 0 ),
+            account,
+            amount
+        );
+        _totalSupply += amount;
+        _balances[ account ] += amount;
+        emit Transfer(
+            address( 0 ),
+            account,
+            amount
+        );
+        _afterTokenTransfer(
+            address( 0 ),
+            account,
+            amount
+        );
+    }
+
+    /**
+     * @dev Destroys `amount` tokens from `account`, reducing the
+     * total supply.
+     *
+     * Emits a {Transfer} event with `to` set to the zero address.
+     *
+     * Requirements:
+     *   - `account` cannot be the zero address.
+     *   - `account` must have at leaset `amount` tokens.
+     */
+    function _burn(
+        address account,
+        uint256 amount
+    ) internal virtual {
+        require(
+            account != address( 0 ),
+            "ERC20; burn from zero address"
+        );
+        _beforeTokenTransfer(
+            account,
+            address( 0 ),
+            amount
+        );
+        uint256 accountBalance = _balances[ account ];
+        require(
+            accountBalance >= amount,
+            "ERC20: burn amount exceeds balalnce"
+        );
+        unchecked {
+            _balances[ account ] = accountBalance - amount;
+        }
+        _totalSupply -= amount;
+        emit Transfer(
+            account,
+            address( 0 ),
+            amount
+        );
+        _afterTokenTransfer(
+            account,
+            address( 0 ),
+            amount
+        );
+    }
+
 }
 
 library SafeMath {
