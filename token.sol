@@ -250,7 +250,7 @@ contract ERC20 is IERC20 {
         address owner = _msgSender();
         uint256 currentAllowance = allowance( owner , spender );
         require(
-            currentAlowance >= subtractedValue,
+            currentAllowance >= subtractedValue,
             "ERC20: decreased allowance below zero"
             );
         unchecked {
